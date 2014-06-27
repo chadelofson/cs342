@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<?php
+
+$uid = $_POST["uid"];
+$password = $_POST["password"];
+$email = $_POST["email"];
+$phone = $_POST["phone"];
+$isValid = true;
+$isNew = true;
+$fileName = "user.txt";
+
+if (preg_match('/[a-z]{3,}/',$uid) != 1 || preg_match('/root/',$uid)  == 1 || preg_match('/admin/',$uid)  == 1 || preg_match('/operator/',$uid)  == 1) {
+	$isValid = false;
+}
+
+$openFile = fopen($fileName,"r");
+while (!feof($openFile)) {
+	$line = fgets($openFile);
+	$info = split(",",$line);
+	if (strcmp($info[0],$uid) == 0) {
+		$isNew = false;
+	}
+}
+fclose($openFile);
+if (preg_match('/[a-zA-Z0-9]{6,}/',$password) != 1) {
+	$isValid = false;
+}
+
+if (preg_match('/^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$/',$email) != 1) {
+	$isValid = false;
+}
+
+if (preg_match('/^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$/',$phone) != 1) {
+	$isValid = false;
+}
+
+if ($_POST["postback"] && $isValid and $isNew) {
+	$result = "$uid,$password,$email,$phone\n";
+	file_put_contents($fileName,$result,FILE_APPEND);
+?>
+<h1>You have successfully created a user account</h1>
+<b>User ID:</b> <?php echo $uid;?><br />
+<b>Email:</b> <?php echo $email;?><br />
+<b>Phone:</b> <?php echo $phone;?>
+<br /><br />
+<a href="prog3_2.php">Login</a>
+<?php
+} else {
+?>
+<form action="prog3_1.php" method="post">
+User ID: <input type="text" name="uid" value="<?php echo $uid; ?>" />
+<?php
+if ((preg_match('/[a-z]{3,}/',$uid) != 1 || preg_match('/root/',$uid)  == 1 || preg_match('/admin/',$uid)  == 1 || preg_match('/operator/',$uid)  == 1) && isset($_POST["postback"])) {
+	echo '<font color="red">Invalid username, only lower case letters</font>';
+}
+if (!$isNew && isset($_POST["postback"])) {
+	echo '<font color="red">User Alread Exists, try a new one</font>';
+}
+?>
+<br />
+Password: <input type="password" name="password" />
+<?php
+if (preg_match('/[a-zA-Z0-9]{6,}/',$password) != 1 && isset($_POST["postback"])) {
+	echo '<font color="red">Invalid password, at least 6 characters</font>';
+}
+?>
+<br />
+E-Mail: <input type="text" name="email" value ="<?php echo $email; ?>" />
+<?php
+if (preg_match('/^[a-z0-9_\+-]+(\.[a-z0-9_\+-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*\.([a-z]{2,4})$/',$email) != 1 && isset($_POST["postback"])) {
+	echo '<font color=\"red\">Invalid email address</font>';
+}
+?>
+<br />
+Phone: <input type="text" name="phone" value = "<?php echo $phone; ?>"/>
+<?php
+if (preg_match('/^([0-9]( |-)?)?(\(?[0-9]{3}\)?|[0-9]{3})( |-)?([0-9]{3}( |-)?[0-9]{4}|[a-zA-Z0-9]{7})$/',$phone) != 1 && isset($_POST["postback"])) {
+	echo '<font color="red">Invalid phone number</font>';
+}
+?>
+<br />
+<input type="hidden" name="postback" value="true" />
+<input type="submit" name="submit" value="Add User"/>
+<input type="reset" name="clear" value="Clear" />
+</form>
+<?php
+}
+?>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>Google Maps AJAX + mySQL/PHP - Add New Location</title>
+  </head>
+<body>
+
+<?php
+require("sqlajax_dbinfo.php");
+
+if (!isset($_POST['postback'])) {
+?>
+<form action="add_location.php" method="post">
+	Name: <input type="text" name="name"><br />
+	Address: <input type="text" name="address"><br />
+	Latitude: <input type="text" name="lat"><br />
+	Longitude: <input type="text" name="lng"><br />
+	Type: <input type="text" name="type"><br />
+	<input type="hidden" name="postback" value="true">
+	<input type="submit" name="addlocation" value="Add Location">
+</form>
+<?php
+} else {
+	$name = $_POST['name'];
+	$address = $_POST['address']; 
+	$lat = $_POST['lat']; 
+	$lng = $_POST['lng']; 
+	$type = $_POST['type'];
+
+	// Opens a connection to a MySQL server
+	$connection=mysql_connect ("mysql.cs.wwu.edu", $username, $password);
+	if (!$connection) {
+	  die('Not connected : ' . mysql_error());
+	}
+
+	// Set the active MySQL database
+	$db_selected = mysql_select_db($database, $connection);
+	if (!$db_selected) {
+	  die ('Can\'t use db : ' . mysql_error());
+	}
+
+	$query = "INSERT INTO `markers` (`name`, `address`, `lat`, `lng`, `type`) VALUES ('$name','$address','$lat','$lng','$type')";
+	$result = mysql_query($query);
+	if (!$result) {
+	  die('Invalid query: ' . mysql_error());
+	} else {
+?>
+<p>
+Record Successfully added!<br />
+<a href="phpsqlajax_map_v3.html">Return to the Map View</a><br />
+<a href="phpsqlajax_map_sat.html">Return to the Satellite View</a>
+</p>
+
+<?php
+	}
+}
+?>
+</body>
